@@ -4,7 +4,7 @@ pipeline {
     environment {
         JAVA_HOME = '/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home'
         PATH = "/opt/homebrew/bin:$PATH"
-        // SONAR_TOKEN đã được lưu trong Jenkins Credentials và gọi bên dưới trong withSonarQubeEnv
+        
     }
 
     stages {
@@ -33,7 +33,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir('online-bookstore') {
-                    sh 'npm test || true'  // Cho phép fail nếu chưa có test
+                    sh 'npm test || true'  
                 }
             }
         }
@@ -66,7 +66,7 @@ pipeline {
         stage('Security') {
             steps {
                 dir('online-bookstore') {
-                    sh 'npm audit || true'  // Cho phép tiếp tục dù có lỗi bảo mật
+                    sh 'npm audit || true'  
                 }
             }
         }
@@ -75,32 +75,44 @@ pipeline {
             steps {
                 dir('online-bookstore') {
                     echo '🚀 Deploying application...'
-                    sh 'nohup node index.js &'
+                    sh 'npm install --prefix ../'
+                    sh 'nohup node ../index.js &'
                 }
             }
         }
 
-        stage('Release') {
+         stage('Release') {
             steps {
                 dir('online-bookstore') {
                     echo '🔖 Tagging release...'
                     script {
-                        def version = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
-                        sh "git tag v${version}"
-                        sh "git push origin v${version}"
+                       
+                        def version = sh(script: "node -p \"require('../package.json').version\"", returnStdout: true).trim()
+                        
+                        
+                        def tagExists = sh(script: "git tag -l v${version}", returnStdout: true).trim()
+                        
+                        if (tagExists) {
+                            echo "Tag v${version} ."
+                        } else {
+                            sh "git tag v${version}"
+                            sh "git push origin v${version}"
+                            echo "Tag v${version} ."
+                        }
                     }
                 }
             }
         }
+
 
         stage('Monitoring') {
             steps {
                 script {
                     def status = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000", returnStdout: true).trim()
                     if (status != '200') {
-                        error("❌ Monitoring failed! App not responding on port 3000.")
+                        error(" Monitoring failed! App not responding on port 3000.")
                     } else {
-                        echo "✅ App is running and responding (HTTP ${status})"
+                        echo " App is running and responding (HTTP ${status})"
                     }
                 }
             }
@@ -113,10 +125,10 @@ pipeline {
             sh "pkill -f index.js || true"
         }
         success {
-            echo '✅ Pipeline completed successfully!'
+            echo ' Pipeline completed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed.'
+            echo ' Pipeline failed.'
         }
     }
 }
