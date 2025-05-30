@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+<<<<<<< HEAD
 "scripts": {
   "test": "echo \"Running tests...\" && exit 0",
   "build": "echo \"Build successful\""
 },
 
+=======
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+>>>>>>> e9a326c16d4e2e9b8aa3a05a7d60e79848c5f13f
   "keywords": [],
   "author": "",
   "license": "ISC",

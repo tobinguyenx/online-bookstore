@@ -1,0 +1,5 @@
+SONAR_TOKEN=feca705ae18bf670c558f2b8944a287ca94bd765
+  -Dsonar.projectKey=tobinguyenx_online-bookstore
+  -Dsonar.organization=tobinguyenx
+  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.login=feca705ae18bf670c558f2b8944a287ca94bd765
