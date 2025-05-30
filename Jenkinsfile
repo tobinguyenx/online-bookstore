@@ -4,6 +4,7 @@ pipeline {
     environment {
         JAVA_HOME = '/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home'
         PATH = "/opt/homebrew/bin:$PATH"
+        // SONAR_TOKEN đã được lưu trong Jenkins Credentials và gọi bên dưới trong withSonarQubeEnv
     }
 
     stages {
@@ -37,21 +38,21 @@ pipeline {
             }
         }
 
-stage('Code Quality') {
-  steps {
-    dir('online-bookstore') {
-      withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-        withEnv([
-          'JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home',
-          'PATH=/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home/bin:/opt/sonar-scanner-4.8.0.2856-macosx/bin:/usr/local/bin:/usr/bin:/bin'
-        ]) {
-          sh 'java -version' // kiểm tra đang dùng Java 17
-          sh 'sonar-scanner -Dsonar.projectKey=tobinguyenx_online-bookstore -Dsonar.organization=tobinguyenx -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN'
+        stage('Code Quality') {
+            steps {
+                dir('online-bookstore') {
+                    withSonarQubeEnv('MySonarQube') {
+                        sh '''
+                          sonar-scanner \
+                            -Dsonar.projectKey=tobinguyenx_online-bookstore \
+                            -Dsonar.organization=tobinguyenx \
+                            -Dsonar.host.url=https://sonarcloud.io \
+                            -Dsonar.login=$SONAR_TOKEN
+                        '''
+                    }
+                }
+            }
         }
-      }
-    }
-  }
-}
 
 
         stage('Quality Gate') {
@@ -65,7 +66,7 @@ stage('Code Quality') {
         stage('Security') {
             steps {
                 dir('online-bookstore') {
-                    sh 'npm audit || true'  // Allow to continue even with vulnerabilities
+                    sh 'npm audit || true'  // Cho phép tiếp tục dù có lỗi bảo mật
                 }
             }
         }
