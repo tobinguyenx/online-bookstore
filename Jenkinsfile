@@ -91,12 +91,6 @@ stage('Code Quality') {
                 }
             }
         }
-        stage('Check Java version') {
-  steps {
-    sh 'java -version'
-  }
-}
-
 
         stage('Monitoring') {
             steps {
