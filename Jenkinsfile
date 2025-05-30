@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        JAVA_HOME = '/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home'
         PATH = "/opt/homebrew/bin:$PATH"
     }
 
@@ -36,21 +37,22 @@ pipeline {
             }
         }
 
-        stage('Code Quality') {
-            steps {
-                dir('online-bookstore') {
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                            sonar-scanner \
-                            -Dsonar.projectKey=tobinguyenx_online-bookstore \
-                            -Dsonar.organization=tobinguyenx \
-                            -Dsonar.host.url=https://sonarcloud.io \
-                            -Dsonar.login=$SONAR_TOKEN
-                        '''
-                    }
-                }
-            }
+stage('Code Quality') {
+  steps {
+    dir('online-bookstore') {
+      withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+        withEnv([
+          'JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home',
+          'PATH=/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home/bin:/opt/sonar-scanner-4.8.0.2856-macosx/bin:/usr/local/bin:/usr/bin:/bin'
+        ]) {
+          sh 'java -version' // kiểm tra đang dùng Java 17
+          sh 'sonar-scanner -Dsonar.projectKey=tobinguyenx_online-bookstore -Dsonar.organization=tobinguyenx -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN'
         }
+      }
+    }
+  }
+}
+
 
         stage('Quality Gate') {
             steps {
@@ -89,6 +91,12 @@ pipeline {
                 }
             }
         }
+        stage('Check Java version') {
+  steps {
+    sh 'java -version'
+  }
+}
+
 
         stage('Monitoring') {
             steps {
